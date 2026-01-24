@@ -1,4 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -7,23 +9,20 @@ interface Message {
   timestamp: Date;
 }
 
-const botResponses = [
-  "Je t'entends, et ce que tu ressens est tout à fait légitime. Tu traverses quelque chose de difficile, et il est normal d'avoir des moments de doute ou de fatigue. Tu as le droit de ne pas aller bien tous les jours. 💕",
-  "Merci de me faire confiance et de partager ça avec moi. Tu n'es pas seule dans ce parcours, même si parfois ça peut sembler isolant. Qu'est-ce qui te pèse le plus en ce moment ?",
-  "Tu fais preuve d'un courage immense, même dans les moments où tu as l'impression de ne pas en avoir. Prendre soin de toi, c'est aussi accepter de te reposer et de demander de l'aide quand tu en as besoin.",
-  "Je suis là pour t'écouter, aussi longtemps que tu en as besoin. Il n'y a pas de bonne ou de mauvaise façon de vivre ce que tu traverses. Chaque parcours est unique, comme toi.",
-  "C'est une question importante que tu poses. N'oublie pas que ton équipe médicale est là pour t'accompagner dans les décisions de santé. Moi, je suis là pour le soutien émotionnel et pour que tu te sentes moins seule. 🌸",
-  "Tu as le droit d'être fatiguée, d'avoir peur, d'être en colère aussi. Toutes ces émotions font partie du chemin. L'important, c'est de ne pas les garder pour toi. Je suis là pour les accueillir avec toi.",
-];
+interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+}
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const conversationHistory = useRef<ConversationMessage[]>([]);
 
   const generateId = () => Math.random().toString(36).substring(2, 15);
 
-  const sendMessage = useCallback((content: string) => {
-    // Add user message
+  const sendMessage = useCallback(async (content: string) => {
+    // Add user message immediately
     const userMessage: Message = {
       id: generateId(),
       content,
@@ -31,23 +30,57 @@ export const useChat = () => {
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, userMessage]);
-
-    // Simulate bot typing
     setIsTyping(true);
 
-    // Simulate bot response after delay
-    const delay = 1500 + Math.random() * 1500;
-    setTimeout(() => {
-      const randomResponse = botResponses[Math.floor(Math.random() * botResponses.length)];
+    try {
+      // Call the RAG edge function
+      const { data, error } = await supabase.functions.invoke("chat-rag", {
+        body: {
+          message: content,
+          conversationHistory: conversationHistory.current,
+        },
+      });
+
+      if (error) {
+        console.error("Edge function error:", error);
+        throw new Error(error.message || "Erreur de connexion");
+      }
+
+      const botResponse = data?.response || "Désolée, je n'ai pas pu répondre. Peux-tu reformuler ? 💕";
+
+      // Update conversation history
+      conversationHistory.current = [
+        ...conversationHistory.current,
+        { role: "user" as const, content },
+        { role: "assistant" as const, content: botResponse },
+      ].slice(-10); // Keep last 10 messages
+
+      // Add bot message
       const botMessage: Message = {
         id: generateId(),
-        content: randomResponse,
+        content: botResponse,
         isBot: true,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botMessage]);
+
+    } catch (error) {
+      console.error("Chat error:", error);
+      
+      // Show error toast
+      toast.error("Erreur de connexion. Réessaie dans quelques instants.");
+
+      // Add fallback message
+      const errorMessage: Message = {
+        id: generateId(),
+        content: "Désolée, j'ai rencontré un petit souci technique. Peux-tu réessayer ? 🌸",
+        isBot: true,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, delay);
+    }
   }, []);
 
   return {
