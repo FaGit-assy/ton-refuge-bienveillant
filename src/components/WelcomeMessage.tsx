@@ -8,12 +8,12 @@ const WelcomeMessage = () => {
       </div>
       
       <h1 className="font-display text-3xl md:text-4xl font-semibold text-foreground mb-4">
-        Bienvenue, belle âme
+        Bonjour, je suis NAFY 💕
       </h1>
       
       <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
-        Je suis là pour t'accompagner avec douceur dans ton parcours. 
-        Tu n'es pas seule, et ce que tu ressens est légitime.
+        Je t'accompagne avec douceur sur le cancer du col de l'utérus et le cancer des ovaires.
+        Tu peux m'écrire ou cliquer sur le micro pour me parler. 🌸
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">

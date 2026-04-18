@@ -14,7 +14,7 @@ interface ConversationMessage {
   content: string;
 }
 
-export const useChat = () => {
+export const useChat = (onBotReply?: (text: string) => void) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const conversationHistory = useRef<ConversationMessage[]>([]);
@@ -63,6 +63,7 @@ export const useChat = () => {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, botMessage]);
+      onBotReply?.(botResponse);
 
     } catch (error) {
       console.error("Chat error:", error);
@@ -81,7 +82,7 @@ export const useChat = () => {
     } finally {
       setIsTyping(false);
     }
-  }, []);
+  }, [onBotReply]);
 
   return {
     messages,
