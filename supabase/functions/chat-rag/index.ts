@@ -185,8 +185,8 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages,
         stream: false,
-        max_tokens: 500,
-        temperature: 0.7,
+        max_tokens: 600,
+        temperature: 0.85,
       }),
     });
 
