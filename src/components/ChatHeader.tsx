@@ -15,11 +15,11 @@ const ChatHeader = () => {
           </div>
           <div>
             <h1 className="font-display text-lg font-semibold text-foreground">
-              Mon Accompagnante
+              NAFY
             </h1>
             <p className="text-xs text-muted-foreground flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-secondary animate-pulse-soft" />
-              Disponible pour toi
+              Ton accompagnante bienveillante
             </p>
           </div>
         </div>
@@ -32,8 +32,8 @@ const ChatHeader = () => {
           </TooltipTrigger>
           <TooltipContent side="bottom" className="max-w-xs text-center">
             <p className="text-sm">
-              Je suis une accompagnante virtuelle. Pour toute question médicale, 
-              consulte ton équipe soignante.
+              NAFY est une accompagnante virtuelle dédiée au cancer du col de l'utérus
+              et des ovaires. Pour tout avis médical, consulte ton équipe soignante.
             </p>
           </TooltipContent>
         </Tooltip>
